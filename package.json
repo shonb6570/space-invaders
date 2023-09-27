@@ -1,0 +1,19 @@
+{
+  "name": "space-invaders",
+  "version": "1.0.0",
+  "description": "HTML Canvas / JavaScript Clone of Space Invaders with some new upgrades",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "HTML5",
+    "Canvas",
+    "JavaScript",
+    "Retro",
+    "Arcade",
+    "Game"
+  ],
+  "author": "Shaun Bolak",
+  "license": "UNLICENSED"
+}
