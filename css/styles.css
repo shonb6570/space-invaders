@@ -1,6 +1,12 @@
 body {
   margin: 0;
-  overflow: hidden;
+}
+
+.canvas {
+  width: 100vw;
+  height: 100vh;
+  box-sizing: border-box;
+  border: 1px solid black;
 }
 
 /*# sourceMappingURL=styles.css.map */

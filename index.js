@@ -4,16 +4,21 @@ const c = canvas.getContext("2d");
 canvas.width = innerWidth;
 canvas.height = innerHeight;
 
+//array of stars
+let starArray = [];
+
 //Star class
 class Star {
-  constructor(x, y, size) {
+  constructor(x, y, size, opacity) {
     this.x = x;
     this.y = y;
     this.size = size;
+    this.opacity = opacity;
   }
 
   draw() {
-    c.fillStyle = "white"; // You can set the color you want for the star
+    //dynamically set star opacity
+    c.fillStyle = `rgba(255, 255, 255, ${this.opacity})`;
     // Draw a rectangle centered at (this.x, this.y) with dimensions this.size x this.size
     c.fillRect(
       this.x - this.size / 2,
@@ -34,7 +39,26 @@ class Star {
     }
   }
 }
-const star = new Star(100, 100, 4); // x, y, and size
+// const star = new Star(100, 100, 4); // x, y, and size
+
+function createStar() {
+  // x, y, and size
+  let size = Math.floor(Math.random() * 4) + 2;
+  let x = Math.random() * canvas.width;
+  let y = Math.random() * canvas.height;
+  let opacity = Math.random() * (0.7 - 0.01) + 0.01;
+
+  //Create a new star and push it to the array of stars
+  const newStar = new Star(x, y, size, opacity);
+  starArray.push(newStar);
+}
+
+const starCount = 40;
+
+//create 20 stars
+for (let i = starCount; i >= 0; i--) {
+  createStar();
+}
 
 //Player class
 class Player {
@@ -129,14 +153,14 @@ function animate() {
   // Draw the player after clearing the canvas
   player.update();
 
-  // Draw the star after the player
-  star.update();
+  // Update and draw each star in the starArray
+  starArray.forEach((star) => {
+    star.update();
+    star.draw();
+  });
 
   // Draw the player after clearing the canvas
   player.draw();
-
-  // Draw the star after the player
-  star.draw();
 
   if (keys.arrowLeft.pressed && player.position.x >= 0) {
     player.velocity.x = -7;
