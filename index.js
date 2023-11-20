@@ -1,7 +1,10 @@
 const canvas = document.querySelector("canvas");
+const fighterSpriteImg = new Image();
+fighterSpriteImg.src = "./img/fighter-sprite.png";
+
 const c = canvas.getContext("2d");
 
-canvas.width = innerWidth;
+canvas.width = innerWidth + 60;
 canvas.height = innerHeight;
 
 //array of stars
@@ -60,6 +63,21 @@ for (let i = starCount; i >= 0; i--) {
   createStar();
 }
 
+//define fighter (player sprite) parameters
+const fighterWidth = 32; //width of each animation frame
+const fighterHeight = 32; //height of each animation frame
+
+const fighterSprite = {
+  x: 0, //initial x position
+  y: 0, //initial y position
+  width: fighterWidth,
+  height: fighterHeight,
+};
+
+let currentFighterFrame = 0;
+const numberOfFrames = 3 * 3; // 3 rows * 3 columns
+let frameX = 0;
+
 //Player class
 class Player {
   constructor() {
@@ -70,54 +88,41 @@ class Player {
 
     this.rotation = 0;
 
-    const image = new Image();
-    image.src = "./img/fighter.png";
-    image.onload = () => {
-      const scale = 2;
-      this.image = image;
-      //set width anbd height
-      const { width, height } = this.image;
-      //set the player image
-      this.width = width * scale;
-      this.height = height * scale;
-      //set postion for player
-      this.position = {
-        //initially place player at bottom of screen in center
-        x: innerWidth / 2 - this.width / 2,
-        y: innerHeight - this.height - 60,
-      };
+    //set fighter image
+    this.image = fighterSpriteImg;
+    const scale = 2;
+    //set width anbd height
+    const { width, height } = this.image;
+    //set the player image
+    this.width = width * scale;
+    this.height = height * scale;
+    //set postion for player
+    this.position = {
+      //initially place player at bottom of screen in center
+      x: innerWidth / 2 - this.width / 2,
+      y: innerHeight - this.height - 140,
     };
   }
 
   draw() {
     //if iamge is loaded, draw the player's ship
     if (this.image) {
-      // c.fillStyle = "red";
-      // c.fillRect(position.x, position.y, width, height);
-      //check if image has loaded, then draw image
-
-      //save a "snapshot" of the rotated canvas in order to make the
-      //character appear to when moving left and right (there is no
-      //other way to do this that I know of)
       c.save();
-      c.translate(
-        player.position.x + player.width / 2,
-        player.position.y + player.height / 2
-      );
+      c.translate(this.position.x + this.width, this.position.y + this.height);
 
       c.rotate(this.rotation);
 
-      c.translate(
-        -player.position.x - player.width / 2,
-        -player.position.y - player.height / 2
-      );
-
+      // Draw the player sprite
       c.drawImage(
         this.image,
-        this.position.x,
-        this.position.y,
-        this.width,
-        this.height
+        (currentFighterFrame % 3) * fighterWidth, //calculate column
+        Math.floor(currentFighterFrame / 3) * fighterHeight, //calculate fram row
+        fighterWidth, // source width
+        fighterHeight, //source height
+        -this.width, // destination x
+        -this.height, // destination y
+        fighterWidth * 2, // destination width
+        fighterHeight * 2 // destination height
       );
 
       c.restore();
@@ -125,11 +130,22 @@ class Player {
   }
 
   update() {
-    if (this.image) {
-      this.draw();
-      this.position.x += this.velocity.x;
-      this.position.y += this.velocity.y;
+    // Add movement logic
+    if (keys.arrowLeft.pressed) {
+      this.position.x -= 5; // Adjust val to change speed
+      this.rotation = -0.1; // Rotate left
     }
+    if (keys.arrowRight.pressed) {
+      this.position.x += 5; //Adjust val to change speed
+      this.rotation = 0.1; // Rotate left
+    }
+
+    // Ensure player stays within canvas bounds
+    if (this.position.x < 0) this.position.x = 0;
+    if (this.position.x + this.width > canvas.width)
+      this.position.x = canvas.width - this.width;
+
+    this.draw();
   }
 }
 
@@ -146,12 +162,13 @@ const keys = {
   },
 };
 
+// introduce a frame delay counter and set the delay value
+let frameDelayCounter = 0;
+const frameDelayThreshold = 15; // Adjust this value to control the animation speed
+
 function animate() {
-  requestAnimationFrame(animate);
   c.fillStyle = "#212121";
   c.fillRect(0, 0, canvas.width, canvas.height);
-  // Draw the player after clearing the canvas
-  player.update();
 
   // Update and draw each star in the starArray
   starArray.forEach((star) => {
@@ -159,19 +176,21 @@ function animate() {
     star.draw();
   });
 
-  // Draw the player after clearing the canvas
-  player.draw();
+  // Increment the frame delay counter
+  frameDelayCounter++;
 
-  if (keys.arrowLeft.pressed && player.position.x >= 0) {
-    player.velocity.x = -7;
-    player.rotation = -0.3;
-  } else if (
-    keys.arrowRight.pressed &&
-    player.position.x + player.width <= innerWidth
-  ) {
-    player.velocity.x = 7;
-    player.rotation = 0.3;
-  } else player.velocity.x = 0;
+  // Check if the frame delay counter reached the threshold
+  if (frameDelayCounter >= frameDelayThreshold) {
+    // Update the current frame and reset the counter
+    currentFighterFrame = (currentFighterFrame + 1) % numberOfFrames;
+    frameDelayCounter = 0;
+  }
+
+  // Update the player's position
+  player.update();
+
+  // Request the next frame
+  requestAnimationFrame(animate);
 }
 
 animate();
