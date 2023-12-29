@@ -10,7 +10,7 @@ canvas.height = innerHeight;
 //array of stars
 let starArray = [];
 
-//Star class
+/* Star class */
 class Star {
   constructor(x, y, size, opacity) {
     this.x = x;
@@ -42,8 +42,9 @@ class Star {
     }
   }
 }
-// const star = new Star(100, 100, 4); // x, y, and size
+/* End of Star class */
 
+//create star function
 function createStar() {
   // x, y, and size
   let size = Math.floor(Math.random() * 4) + 2;
@@ -78,7 +79,7 @@ let currentFighterFrame = 0;
 const numberOfFrames = 3 * 3; // 3 rows * 3 columns
 let frameX = 0;
 
-//Player class
+/* Player class  */
 class Player {
   constructor() {
     this.velocity = {
@@ -100,7 +101,7 @@ class Player {
     this.position = {
       //initially place player at bottom of screen in center
       x: innerWidth / 2 - this.width / 2,
-      y: innerHeight - this.height - 140,
+      y: innerHeight - this.height - 150,
     };
   }
 
@@ -148,8 +149,35 @@ class Player {
     this.draw();
   }
 }
+/* End of Player class  */
+
+/* Projectile class */
+
+class Projectile {
+  constructor({ position, velocity }) {
+    this.position = position;
+    this.velocity = velocity;
+    this.radius = 3;
+  }
+  draw() {
+    //following is a set pattern to draw a circle on canvas (to make circular projectile)
+    c.beginPath();
+    c.arc(this.position.x, this.position.y, this.radius, 0, Math.PI * 2);
+    c.fillStyle = "red";
+    c.fill();
+    c.closePath();
+  }
+  update() {
+    this.draw();
+    this.position.x += this.velocity.x;
+    this.position.y += this.velocity.y;
+  }
+}
+
+/* End of Projectile class */
 
 const player = new Player();
+const projectiles = [];
 const keys = {
   arrowLeft: {
     pressed: false,
@@ -188,6 +216,14 @@ function animate() {
 
   // Update the player's position
   player.update();
+  // Update/redraw the projectiles position
+  projectiles.forEach((projectile, index) => {
+    if (projectile.position.y + projectile.radius <= 0) {
+      projectiles.splice(index, 1);
+    } else {
+      projectile.update();
+    }
+  });
 
   // Request the next frame
   requestAnimationFrame(animate);
@@ -198,15 +234,25 @@ animate();
 addEventListener("keydown", ({ key }) => {
   switch (key) {
     case "ArrowLeft":
-      console.log("left");
       keys.arrowLeft.pressed = true;
       break;
     case "ArrowRight":
-      console.log("right");
       keys.arrowRight.pressed = true;
       break;
     case " ":
-      console.log("space");
+      projectiles.push(
+        new Projectile({
+          position: {
+            x: player.position.x + fighterWidth,
+            y: player.position.y,
+          },
+          velocity: {
+            x: player.velocity.x,
+            y: -5,
+          },
+        })
+      );
+      console.log(projectiles);
       keys.space.pressed = true;
       break;
   }
